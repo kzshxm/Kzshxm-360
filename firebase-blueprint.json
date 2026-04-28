@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "tour": {
+      "title": "Tour",
+      "description": "A 360 virtual tour configuration containing scenes and markers.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns the tour."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the tour."
+        },
+        "scenes": {
+          "type": "array",
+          "description": "Array of scene items",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "url": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "type": "string", "enum": ["image", "video"] }
+            }
+          }
+        },
+        "markers": {
+          "type": "array",
+          "description": "Array of marker placements",
+          "items": {
+            "type": "object"
+          }
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp when this was created"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Timestamp when this was last updated"
+        }
+      },
+      "required": ["userId", "scenes", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/tours/{tourId}": {
+      "schema": {
+        "$ref": "#/entities/tour"
+      },
+      "description": "Stores user created tours."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Intelligent 360 Virtual Tour",
+  "description": "A 360-degree image and video viewer with AI scene analysis, hotpots/markers, cloud sharing, and voice narration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

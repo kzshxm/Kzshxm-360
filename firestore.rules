@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidId(id) { 
+        return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function isValidTour(data) {
+        return data.userId is string 
+            && data.userId == request.auth.uid
+            && data.title is string && data.title.size() <= 200
+            && data.scenes is list && data.scenes.size() <= 50
+            && data.markers is map
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+    }
+
+    match /tours/{tourId} {
+        // Anyone can read tours since they are shared
+        allow read: if isValidId(tourId); 
+        allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+        allow delete: if isSignedIn() && existing().userId == request.auth.uid && isValidId(tourId);
+
+        allow create: if isSignedIn() 
+            && isValidId(tourId)
+            && isValidTour(incoming())
+            && incoming().createdAt == request.time
+            && incoming().updatedAt == request.time
+            && incoming().keys().hasAll(['userId', 'title', 'scenes', 'markers', 'createdAt', 'updatedAt'])
+            && incoming().keys().size() == 6;
+
+        allow update: if isSignedIn() 
+            && isValidId(tourId)
+            && existing().userId == request.auth.uid
+            && isValidTour(incoming())
+            && incoming().userId == existing().userId
+            && incoming().createdAt == existing().createdAt
+            && incoming().updatedAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'scenes', 'markers', 'updatedAt']);
+    }
+  }
+}
